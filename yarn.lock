@@ -3783,6 +3783,7 @@ __metadata:
     "@eslint/js": "npm:^9.19.0"
     "@jest/globals": "npm:^29.7.0"
     "@joystream/prettier-config": "npm:^1.0.0"
+    "@types/node": "npm:^20"
     eslint: "npm:^9.19.0"
     eslint-config-prettier: "npm:^10.0.1"
     globals: "npm:^15.14.0"
@@ -5375,6 +5376,15 @@ __metadata:
   version: 16.18.126
   resolution: "@types/node@npm:16.18.126"
   checksum: 10c0/5c137eb141d33de32b16ff26047ff6d449432b58d0d25f7cced2040c97727d81fe1099a7581eb336d14a6840f5b09e363bdd43d7a6995e8e81eb47aa51e413fc
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20":
+  version: 20.17.19
+  resolution: "@types/node@npm:20.17.19"
+  dependencies:
+    undici-types: "npm:~6.19.2"
+  checksum: 10c0/930e554eadeb0c2848f9225007ef66ea9c7fe987c80e2f2c1a9f316b297036d4054bbc5459b67051cf32cd360a022344c2998dcb1ec7579109f631b6d5f21bf8
   languageName: node
   linkType: hard
 
@@ -18847,6 +18857,13 @@ __metadata:
   version: 1.12.1
   resolution: "underscore@npm:1.12.1"
   checksum: 10c0/00f392357e363353ac485e7c156b749505087e31ff4fdad22e04ebd2f94a56fbc554cd41a6722e3895a818466cf298b1cae93ff6211d102d373a9b50db63bfd0
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
   languageName: node
   linkType: hard
 
