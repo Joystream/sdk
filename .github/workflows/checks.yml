@@ -16,6 +16,8 @@ jobs:
           node-version-file: 'package.json'
       - name: Install dependencies
         run: yarn install --no-immutable
+      - name: Show yarn config
+        run: yarn config
       - name: Git diff
         run: git diff HEAD
       - name: Run codegen
@@ -36,6 +38,8 @@ jobs:
           node-version-file: 'package.json'
       - name: Install dependencies
         run: yarn install --no-immutable
+      - name: Show yarn config
+        run: yarn config
       - name: Git diff
         run: git diff HEAD
       - name: Run codegen
