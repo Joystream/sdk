@@ -33,7 +33,7 @@ jobs:
         with:
           node-version-file: 'package.json'
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --verbose --immutable
       - name: Run codegen
         run: yarn codegen
       - name: Run lint
