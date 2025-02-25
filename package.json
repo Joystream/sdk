@@ -1,5 +1,6 @@
 {
   "name": "@joystream/sdk",
+  "private": true,
   "description": "Joystream's JavaScript/TypeScript SDK",
   "author": "Leszek Wiesner",
   "license": "GPL-3.0-only",
