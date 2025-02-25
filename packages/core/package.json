@@ -1,0 +1,29 @@
+{
+  "name": "@joystream/sdk-core",
+  "version": "1.0.0",
+  "description": "Joystream SDK core",
+  "license": "GPL-3.0-only",
+  "author": "Leszek Wiesner",
+  "main": "index.js",
+  "dependencies": {
+    "@polkadot/api": "^10.13",
+    "@walletconnect/modal": "^2.7",
+    "@walletconnect/universal-provider": "^2.18",
+    "axios": "1.7.9",
+    "debug": "^4.4.0",
+    "lodash": "^4.17.21",
+    "queue": "^6.0.0"
+  },
+  "devDependencies": {
+    "@genql/cli": "^6.3.3",
+    "@types/debug": "^4.1.12",
+    "@types/lodash": "^4",
+    "@types/ws": "^8.5.14"
+  },
+  "exports": {
+    "./*": "./lib/*/index.js"
+  },
+  "engines": {
+    "node": "^20"
+  }
+}

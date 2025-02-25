@@ -1,0 +1,47 @@
+{
+  "name": "@joystream/sdk",
+  "description": "Joystream's JavaScript/TypeScript SDK",
+  "author": "Leszek Wiesner",
+  "license": "GPL-3.0-only",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "run-example": "./scripts/run-example.sh",
+    "codegen:query-apis": "./scripts/ts-run.sh core ./src/query/codegen/generateApis.ts",
+    "lint": "eslint .",
+    "codegen": "yarn codegen:query-apis",
+    "build": "yarn tsc -b",
+    "build:examples": "./scripts/build-examples.sh"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.12",
+    "@eslint/js": "^9.19.0",
+    "@jest/globals": "^29.7.0",
+    "@joystream/prettier-config": "^1.0.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.14.0",
+    "jest": "^29.7.0",
+    "prettier": "3.4.2",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.22.0"
+  },
+  "prettier": "@joystream/prettier-config",
+  "engines": {
+    "node": "^20",
+    "yarn": ">=2"
+  },
+  "volta": {
+    "node": "20.18.2",
+    "yarn": "4.6.0"
+  }
+}
