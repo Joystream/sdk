@@ -8,6 +8,5 @@ node_modules
 !.yarn/versions
 examples/**/.env
 **/__generated__
-**/__WIP__*
 **/lib
 **/*.tsbuildinfo
