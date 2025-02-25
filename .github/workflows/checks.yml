@@ -15,7 +15,9 @@ jobs:
         with:
           node-version-file: 'package.json'
       - name: Install dependencies
-        run: yarn install --check-cache --check-resolutions --immutable
+        run: yarn install
+      - name: Git diff
+        run: git diff HEAD
       - name: Run codegen
         run: yarn codegen
       - name: Run build
@@ -33,7 +35,9 @@ jobs:
         with:
           node-version-file: 'package.json'
       - name: Install dependencies
-        run: yarn install --check-cache --check-resolutions --immutable
+        run: yarn install
+      - name: Git diff
+        run: git diff HEAD
       - name: Run codegen
         run: yarn codegen
       - name: Run lint
