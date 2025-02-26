@@ -1,0 +1,26 @@
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  tests:
+    name: Tests
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Run build
+        run: yarn build
+      - name: Setup testing environment
+        run: yarn test:setup
+      - name: Run tests
+        run: yarn test

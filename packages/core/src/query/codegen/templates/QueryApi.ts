@@ -23,6 +23,8 @@ import { ClientOptions } from './genql/runtime'
 type Config = {
   // Maximum size of an array of input arguments to a query (for example, list of ids in `query.Entity.byIds`)
   inputBatchSize: number
+  // Maximum number of results to fetch in a single query
+  resultsPerQueryLimit: number
   // Maximum number of requests that can be sent concurrently to GraphQL server
   concurrentRequestsLimit: number
   // GenQL client options
@@ -31,6 +33,7 @@ type Config = {
 
 export const DEFAULT_CONFIG: Config = {
   inputBatchSize: 1000,
+  resultsPerQueryLimit: 1000,
   concurrentRequestsLimit: 20,
 }
 
@@ -49,11 +52,16 @@ type SelectionOf<Q extends keyof QueryGenqlSelection> = Omit<
 type WhereOf<Q extends keyof QueryGenqlSelection> =
   NonNullable<ArgsOf<Q>> extends { where?: infer W | null } ? W : never
 
+type OrderByOf<Q extends keyof QueryGenqlSelection> =
+  NonNullable<ArgsOf<Q>> extends { orderBy?: infer O | null } ? O : never
+
+type CommonArgs<Q extends keyof QueryGenqlSelection> = { where?: WhereOf<Q>, orderBy?: OrderByOf<Q> }
+
 type ResultOf<Q extends keyof QueryGenqlSelection, S> = QueryResult<{
   [K in Q]: S
 }>
 
-type Extracted<T> = Exclude<T[keyof T], null>
+type Extracted<T> = Exclude<T[keyof T & string], null>
 
 type ExtractedResult<
   Q extends keyof QueryGenqlSelection,
@@ -64,6 +72,67 @@ type EntityInfo = typeof ENTITY_INFO
 export type AnyEntity = keyof EntityInfo
 type UniqueQueryOf<E extends AnyEntity> = EntityInfo[E]['uniqueQuery']
 type MultiQueryOf<E extends AnyEntity> = EntityInfo[E]['multiQuery']
+type ConnectionQueryOf<E extends AnyEntity> = EntityInfo[E]['connectionQuery']
+
+type PaginationResult<N> = {
+  edges: {
+    node: N
+  }[],
+  pageInfo: {
+    hasNextPage: boolean
+    endCursor: string
+  }
+}
+
+type PaginationResultOf<E extends AnyEntity, S extends SelectionOf<MultiQueryOf<E>>> =
+  ExtractedResult<ConnectionQueryOf<E>, PaginationQuerySelection<S>> extends PaginationResult<infer N> ?
+    PaginationResult<N>
+    : never
+
+type NodeTypeOf<R extends PaginationResult<unknown>> = R['edges'][number]['node'] 
+
+class Pagination<N> {
+  private _cursor: string | null | undefined = undefined
+  private _hasNextPage: boolean = true
+
+  constructor(
+    private fetchPage: (cursor: string | null | undefined) => Promise<PaginationResult<N>>,
+  ) {}
+
+  async nextPage(): Promise<N[]> {
+    if (!this._hasNextPage) {
+      return []
+    }
+    const result = await this.fetchPage(this._cursor)
+    this._cursor = result.pageInfo.endCursor
+    this._hasNextPage = result.pageInfo.hasNextPage
+
+    return result.edges.map(e => e.node)
+  }
+
+  async fetchAll(): Promise<N[]> {
+    let results: N[] = []
+    while (this._hasNextPage) {
+      const pageResults = await this.nextPage()
+      results = results.concat(pageResults)
+    }
+
+    return results
+  }
+
+  public get hasNextPage() {
+    return this._hasNextPage
+  }
+
+  public get cursor() {
+    return this._cursor
+  }
+}
+
+type PaginationQuerySelection<S> = {
+  edges: { node: S },
+  pageInfo: { hasNextPage: true, endCursor: true }
+}
 
 class EntityQueryUtils<E extends AnyEntity> {
   constructor(
@@ -74,30 +143,54 @@ class EntityQueryUtils<E extends AnyEntity> {
     private entity: E
   ) {}
 
-  public async byMany<W extends WhereOf<MultiQueryOf<E>>, I>(
-    whereGenerator: (input: I[]) => W,
-    input: I[]
-  ): Promise<ExtractedResult<MultiQueryOf<E>>>
+  public paginate<A extends CommonArgs<MultiQueryOf<E>>, S extends SelectionOf<MultiQueryOf<E>>>(
+    args: A,
+    select: S,
+    size?: number
+  ) {
+    const connectionQuery = ENTITY_INFO[this.entity]['connectionQuery']
+    const fetchPage = async (cursor: string | null | undefined): Promise<PaginationResultOf<E, S>> => {
+      const querySelection: PaginationQuerySelection<S> = {
+        edges: {
+          node: {
+            ...select
+          }
+        },
+        pageInfo: {
+          hasNextPage: true,
+          endCursor: true
+        }
+      }
+      const queryArgs = {
+        ...(args || {}),
+        first: size || this.config.resultsPerQueryLimit,
+        after: cursor,
+      }
+      const query = {
+        [connectionQuery]: {
+          __args: queryArgs,
+          ...querySelection,
+        }
+      } as { [K in ConnectionQueryOf<E>]: { __args: typeof queryArgs } & PaginationQuerySelection<S> }
+      const page = await this.runQuery(query)
+      if (page && connectionQuery in page && page[connectionQuery as keyof typeof page]) {
+        return page[connectionQuery as keyof typeof page] as PaginationResultOf<E, S>
+      }
+      throw new UnexpectedEmptyResult(connectionQuery, page)
+    }
 
-  public async byMany<
-    W extends WhereOf<MultiQueryOf<E>>,
-    I,
-    S extends SelectionOf<MultiQueryOf<E>>,
-  >(
-    whereGenerator: (input: I[]) => W,
-    input: I[],
-    select: S
-  ): Promise<ExtractedResult<MultiQueryOf<E>, S>>
+    return new Pagination<NodeTypeOf<PaginationResultOf<E, S>>>(fetchPage)
+  }
 
   async byMany<
     W extends WhereOf<MultiQueryOf<E>>,
     I,
-    S extends SelectionOf<MultiQueryOf<E>>,
+    S extends SelectionOf<MultiQueryOf<E>> | { __scalar: true } = { __scalar: true },
   >(
     whereGenerator: (input: I[]) => W,
     input: I[],
     select?: S
-  ): Promise<ExtractedResult<MultiQueryOf<E>, S | { __scalar: true }>> {
+  ): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
     const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
     const results = await Promise.all(
       _.chunk(input, this.config.inputBatchSize).map(async (inputChunk) => {
@@ -121,21 +214,14 @@ class EntityQueryUtils<E extends AnyEntity> {
 
     return results.flat() as ExtractedResult<
       MultiQueryOf<E>,
-      S | { __scalar: true }
+      S
     >
   }
 
-  async byId(id: string): Promise<ExtractedResult<UniqueQueryOf<E>>>
-
-  async byId<S extends SelectionOf<UniqueQueryOf<E>>>(
-    id: string,
-    select: S
-  ): Promise<ExtractedResult<UniqueQueryOf<E>, S>>
-
-  async byId<S extends SelectionOf<UniqueQueryOf<E>>>(
+  async byId<S extends SelectionOf<UniqueQueryOf<E>> | { __scalar: true } = { __scalar: true }>(
     id: string,
     select?: S
-  ): Promise<ExtractedResult<UniqueQueryOf<E>, S | { __scalar: true }>> {
+  ): Promise<ExtractedResult<UniqueQueryOf<E>, S>> {
     const uniqueQuery = ENTITY_INFO[this.entity]['uniqueQuery']
     const query = {
       [uniqueQuery]: {
@@ -152,12 +238,19 @@ class EntityQueryUtils<E extends AnyEntity> {
       if (extracted) {
         return extracted as ExtractedResult<
           UniqueQueryOf<E>,
-          S | { __scalar: true }
+          S
         >
       }
     }
 
     throw new EntityNotFoundError(this.entity, id)
+  }
+
+  async byIds<S extends SelectionOf<MultiQueryOf<E>> | { __scalar: true } = { __scalar: true }>(
+    ids: string[],
+    select?: S
+  ): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
+    return this.byMany((ids) => ({ id_in: ids }) as WhereOf<MultiQueryOf<E>>, ids, select)
   }
 }
 
