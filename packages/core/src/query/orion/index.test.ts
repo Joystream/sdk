@@ -18,9 +18,11 @@ const expectTypeCheck = <Expected>() => {
   return {
     ofVariable: <Actual>(v: Actual) => {
       return {
-        toPass: () => v
-      } as TypesMatch<Expected, Actual> extends true ? { toPass: () => Actual } : never
-    }
+        toPass: () => v,
+      } as TypesMatch<Expected, Actual> extends true
+        ? { toPass: () => Actual }
+        : never
+    },
   }
 }
 
@@ -113,22 +115,34 @@ describe('OrionApi', () => {
         const PAGE_SIZE = 3
         const pagination = orionApi.query.App.paginate(
           {
-            orderBy: ['id_DESC']
+            orderBy: ['id_DESC'],
           },
           { id: true, name: true },
           PAGE_SIZE
         )
-        const expectedData = _.sortBy(_.range(1, 11).map((i) => ({
-          id: i.toString(),
-          name: `App${i}`
-        })), 'id').reverse()
+        const expectedData = _.sortBy(
+          _.range(1, 11).map((i) => ({
+            id: i.toString(),
+            name: `App${i}`,
+          })),
+          'id'
+        ).reverse()
         expect(pagination.hasNextPage).toEqual(true)
         const numPages = Math.ceil(expectedData.length / PAGE_SIZE)
-        for (let i=0; i < numPages; ++i) {
+        for (let i = 0; i < numPages; ++i) {
           const pageData = await pagination.nextPage()
-          expectTypeCheck<{ id: string, name: string }[]>().ofVariable(pageData).toPass()
-          const expectedPageData = expectedData.slice(i * PAGE_SIZE, (i+1) * PAGE_SIZE)
-          expect(pageData.length).toEqual(i !== numPages - 1 ? PAGE_SIZE : (expectedData.length % PAGE_SIZE) || PAGE_SIZE)
+          expectTypeCheck<{ id: string; name: string }[]>()
+            .ofVariable(pageData)
+            .toPass()
+          const expectedPageData = expectedData.slice(
+            i * PAGE_SIZE,
+            (i + 1) * PAGE_SIZE
+          )
+          expect(pageData.length).toEqual(
+            i !== numPages - 1
+              ? PAGE_SIZE
+              : expectedData.length % PAGE_SIZE || PAGE_SIZE
+          )
           expect(pageData).toEqual(expectedPageData)
           expect(pagination.hasNextPage).toEqual(i !== numPages - 1)
         }
@@ -139,7 +153,7 @@ describe('OrionApi', () => {
         const PAGE_SIZE = 3
         const pagination = orionApi.query.App.paginate(
           {
-            orderBy: ['id_DESC']
+            orderBy: ['id_DESC'],
           },
           { id: true, name: true },
           PAGE_SIZE
@@ -147,10 +161,12 @@ describe('OrionApi', () => {
         expect(pagination.hasNextPage).toEqual(true)
         const results = await pagination.fetchAll()
         expect(pagination.hasNextPage).toEqual(false)
-        expectTypeCheck<{ id: string, name: string }[]>().ofVariable(results).toPass()
+        expectTypeCheck<{ id: string; name: string }[]>()
+          .ofVariable(results)
+          .toPass()
         const expectedData = _.range(1, 11).map((i) => ({
           id: i.toString(),
-          name: `App${i}`
+          name: `App${i}`,
         }))
         expect(results).toEqual(_.sortBy(expectedData, 'id').reverse())
       })

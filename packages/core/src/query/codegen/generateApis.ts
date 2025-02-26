@@ -70,10 +70,12 @@ async function main() {
       'entityInfo.ts'
     )
     appDebug(`Extracting entity info to ${entityInfoPath}...`)
-    const genQLTypesModulePath = path.relative(
-      __dirname,
-      path.join(generatedFilesPath(appName), 'genql', 'types')
-    ).replace(path.sep, '/')
+    const genQLTypesModulePath = path
+      .relative(
+        __dirname,
+        path.join(generatedFilesPath(appName), 'genql', 'types')
+      )
+      .replace(path.sep, '/')
     const { default: genQLTypes } = await import(genQLTypesModulePath)
     await generateEntityInfo(genQLTypes, entityInfoPath)
     // "Generate" Query API
