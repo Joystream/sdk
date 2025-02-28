@@ -7,6 +7,7 @@
   "main": "index.js",
   "dependencies": {
     "@polkadot/api": "^10.13",
+    "@talismn/connect-wallets": "^1.2.8",
     "@walletconnect/modal": "^2.7",
     "@walletconnect/universal-provider": "^2.18",
     "axios": "1.7.9",

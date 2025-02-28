@@ -1,0 +1,22 @@
+{
+  "name": "@joystream/sdk-examples-keys-cli",
+  "description": "Example @joystream/sdk-core KeyManager CLI integration w/ WalletConnect",
+  "author": "Leszek Wiesner",
+  "license": "GPL-3.0-only",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.3.2",
+    "@joystream/sdk-core": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "qrcode": "^1.5.4"
+  },
+  "engines": {
+    "node": "^20",
+    "yarn": ">=2"
+  },
+  "type": "module"
+}
