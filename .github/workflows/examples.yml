@@ -24,7 +24,7 @@ jobs:
         run: yarn build:examples
       - name: Ensure the repository contains up-to-date example builds
         run: |
-          if [[ -z "$(git status -s)" ]];
+          if [ "$(git status -s)" == "" ]; then
             echo "OK"
             exit 0
           else
