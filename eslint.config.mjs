@@ -15,6 +15,7 @@ export default [
     ignores: [
       'packages/core/src/query/codegen/templates/*',
       'packages/core/src/query/**/__generated__/genql',
+      '**/lib',
     ],
   },
 ]
