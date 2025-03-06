@@ -23,14 +23,7 @@ jobs:
       - name: Build examples
         run: yarn build:examples
       - name: Ensure the repository contains up-to-date example builds
-        run: |
-          if [ "$(git status -s)" == "" ]; then
-            echo "OK"
-            exit 0
-          else
-            echo "Changes detected!"
-            exit 1
-          fi
+        run: ./scripts/check-git-diff.sh
   run_ts:
     name: Run examples (TypeScript)
     strategy:
