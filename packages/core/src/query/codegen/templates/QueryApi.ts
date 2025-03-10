@@ -13,6 +13,7 @@ import {
 } from './genql'
 import Queue from 'queue'
 import { ENTITY_INFO } from './entityInfo'
+import { DEFAULT_SELECTION } from '../defaultSelection'
 import {
   EntityNotFoundError,
   UnexpectedEmptyResult,
@@ -48,6 +49,10 @@ type SelectionOf<Q extends keyof QueryGenqlSelection> = Omit<
   NonNullable<QueryGenqlSelection[Q]>,
   '__args'
 >
+
+type DefaultSelectionOf<E> = E extends keyof typeof DEFAULT_SELECTION
+  ? (typeof DEFAULT_SELECTION)[E]
+  : { __scalar: true }
 
 type WhereOf<Q extends keyof QueryGenqlSelection> =
   NonNullable<ArgsOf<Q>> extends { where?: infer W | null } ? W : never
@@ -126,7 +131,9 @@ class Pagination<N> {
     let results: N[] = []
     while (this._hasNextPage) {
       const pageResults = await this.nextPage()
-      results = results.concat(pageResults)
+      if (pageResults) {
+        results = results.concat(pageResults)
+      }
     }
 
     return results
@@ -147,13 +154,21 @@ type PaginationQuerySelection<S> = {
 }
 
 class EntityQueryUtils<E extends AnyEntity> {
+  private defaultSelection: DefaultSelectionOf<E>
+
   constructor(
     private runQuery: <Q extends QueryGenqlSelection>(
       query: Q
     ) => Promise<FieldsSelection<Query, Q>>,
     private config: Config,
     private entity: E
-  ) {}
+  ) {
+    this.defaultSelection = (
+      entity in DEFAULT_SELECTION
+        ? DEFAULT_SELECTION[entity as keyof typeof DEFAULT_SELECTION]
+        : { __scalar: true }
+    ) as DefaultSelectionOf<E>
+  }
 
   public paginate<
     A extends CommonArgs<MultiQueryOf<E>>,
@@ -209,9 +224,9 @@ class EntityQueryUtils<E extends AnyEntity> {
   async byMany<
     W extends WhereOf<MultiQueryOf<E>>,
     I,
-    S extends SelectionOf<MultiQueryOf<E>> | { __scalar: true } = {
-      __scalar: true
-    },
+    S extends
+      | SelectionOf<MultiQueryOf<E>>
+      | DefaultSelectionOf<E> = DefaultSelectionOf<E>,
   >(
     whereGenerator: (input: I[]) => W,
     input: I[],
@@ -223,7 +238,7 @@ class EntityQueryUtils<E extends AnyEntity> {
         const query = {
           [multiQuery]: {
             __args: { where: whereGenerator(inputChunk) },
-            ...(select || { __scalar: true }),
+            ...(select || this.defaultSelection),
           },
         } as { [K in MultiQueryOf<E>]: { __args: { where: W } } & S }
         const result = await this.runQuery(query)
@@ -242,9 +257,9 @@ class EntityQueryUtils<E extends AnyEntity> {
   }
 
   async byId<
-    S extends SelectionOf<UniqueQueryOf<E>> | { __scalar: true } = {
-      __scalar: true
-    },
+    S extends
+      | SelectionOf<UniqueQueryOf<E>>
+      | DefaultSelectionOf<E> = DefaultSelectionOf<E>,
   >(id: string, select?: S): Promise<ExtractedResult<UniqueQueryOf<E>, S>> {
     const uniqueQuery = ENTITY_INFO[this.entity]['uniqueQuery']
     const query = {
@@ -252,7 +267,7 @@ class EntityQueryUtils<E extends AnyEntity> {
         __args: {
           where: { id },
         },
-        ...(select || { __scalar: true }),
+        ...(select || this.defaultSelection),
       },
     } as { [K in UniqueQueryOf<E>]: { __args: { where: { id: string } } } & S }
     const result = await this.runQuery(query)
@@ -268,9 +283,9 @@ class EntityQueryUtils<E extends AnyEntity> {
   }
 
   async byIds<
-    S extends SelectionOf<MultiQueryOf<E>> | { __scalar: true } = {
-      __scalar: true
-    },
+    S extends
+      | SelectionOf<MultiQueryOf<E>>
+      | DefaultSelectionOf<E> = DefaultSelectionOf<E>,
   >(ids: string[], select?: S): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
     return this.byMany(
       (ids) => ({ id_in: ids }) as WhereOf<MultiQueryOf<E>>,

@@ -43,15 +43,7 @@ describe('OrionApi', () => {
     describe('Standard case, default selection', () => {
       for (const entityName of VISIBLE_ENTITIES) {
         test(`${entityName}`, async () => {
-          // FIXME: In case of `StorageDataObject` we omit `resolvedUrls`, because it's not really a scalar
-          const query =
-            entityName === 'StorageDataObject'
-              ? orionApi.query.StorageDataObject.byId('1', {
-                  __scalar: true,
-                  resolvedUrls: false,
-                })
-              : orionApi.query[entityName as 'Membership'].byId('1')
-
+          const query = orionApi.query[entityName as 'Membership'].byId('1')
           const result = await query
           expect(result?.id).toBe('1')
         })
