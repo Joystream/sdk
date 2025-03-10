@@ -335,6 +335,15 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
 
   public paginate<
     A extends CommonArgs<MultiQueryOf<E>>,
+    S extends SelectionOf<MultiQueryOf<E>>,
+  >(args: { select: S; pageSize?: number } & A): PaginationFor<P, E, S>
+
+  public paginate<A extends CommonArgs<MultiQueryOf<E>>>(
+    args: { select: DefaultSelectionOf<E>; pageSize?: number } & A
+  ): PaginationFor<P, E, DefaultSelectionOf<E>>
+
+  public paginate<
+    A extends CommonArgs<MultiQueryOf<E>>,
     S extends SelectionOf<MultiQueryOf<E>> | undefined,
   >(args: { select?: S; pageSize?: number } & A): PaginationFor<P, E, S> {
     if (this.paginationType === PaginationType.Connection) {
@@ -344,10 +353,25 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
     }
   }
 
+  async byMany<W extends WhereOf<MultiQueryOf<E>>, I>(args: {
+    where: (input: I[]) => W
+    input: I[]
+  }): Promise<ExtractedResult<E, MultiQueryOf<E>, DefaultSelectionOf<E>>>
+
   async byMany<
     W extends WhereOf<MultiQueryOf<E>>,
     I,
-    S extends SelectionOf<MultiQueryOf<E>> | undefined,
+    S extends SelectionOf<MultiQueryOf<E>>,
+  >(args: {
+    where: (input: I[]) => W
+    input: I[]
+    select: S
+  }): Promise<ExtractedResult<E, MultiQueryOf<E>, S>>
+
+  async byMany<
+    W extends WhereOf<MultiQueryOf<E>>,
+    I,
+    S extends SelectionOf<MultiQueryOf<E>>,
   >(args: {
     where: (input: I[]) => W
     input: I[]
@@ -387,6 +411,15 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
     return results.flat() as ExtractedResult<E, MultiQueryOf<E>, S>
   }
 
+  async byId(
+    id: string
+  ): Promise<ExtractedResult<E, UniqueQueryOf<E>, DefaultSelectionOf<E>>>
+
+  async byId<S extends SelectionOf<UniqueQueryOf<E>>>(
+    id: string,
+    select: S
+  ): Promise<ExtractedResult<E, UniqueQueryOf<E>, S>>
+
   async byId<S extends SelectionOf<UniqueQueryOf<E>> | undefined>(
     id: string,
     select?: S
@@ -417,15 +450,24 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
     throw new EntityNotFoundError(this.entity, id)
   }
 
-  async byIds<S extends SelectionOf<MultiQueryOf<E>> | undefined>(
+  async byIds<S extends SelectionOf<MultiQueryOf<E>>>(
+    ids: string[],
+    select: S
+  ): Promise<ExtractedResult<E, MultiQueryOf<E>, S>>
+
+  async byIds(
+    ids: string[]
+  ): Promise<ExtractedResult<E, MultiQueryOf<E>, DefaultSelectionOf<E>>>
+
+  async byIds<S>(
     ids: string[],
     select?: S
   ): Promise<ExtractedResult<E, MultiQueryOf<E>, S>> {
     return this.byMany({
-      select,
+      select: select || this.defaultSelection,
       where: (ids) => ({ id_in: ids }) as WhereOf<MultiQueryOf<E>>,
       input: ids,
-    })
+    }) as ExtractedResult<E, MultiQueryOf<E>, S>
   }
 }
 

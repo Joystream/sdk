@@ -59,6 +59,12 @@ describe('OrionApi', () => {
             },
           },
         })
+        // Check for correct .map inferrence
+        channel.videos.map((v) =>
+          expectTypeCheck<{ license: { code: number | null } | null }>()
+            .ofVariable(v)
+            .toPass()
+        )
         expect(channel.rewardAccount).toBe('string')
         expect(channel.videos.length).toBe(1)
         expect(channel.videos[0].license?.code).toBe(1)
