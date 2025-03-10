@@ -21,7 +21,7 @@ import {
 import { rootDebug } from '@joystream/sdk-core/utils/debug'
 import { ClientOptions } from './genql/runtime'
 
-type Config = {
+export type Config = {
   // Maximum size of an array of input arguments to a query (for example, list of ids in `query.Entity.byIds`)
   inputBatchSize: number
   // Maximum number of results to fetch in a single query
@@ -38,8 +38,6 @@ export const DEFAULT_CONFIG: Config = {
   concurrentRequestsLimit: 20,
 }
 
-type AsExtending<T1, T2> = T1 extends T2 ? T1 : never
-
 type ArgsOf<Q extends keyof QueryGenqlSelection> =
   NonNullable<QueryGenqlSelection[Q]> extends {
     __args?: infer A
@@ -52,12 +50,12 @@ type SelectionOf<Q extends keyof QueryGenqlSelection> = Omit<
   '__args'
 >
 
-type DefaultSelectionOf<
-  E extends AnyEntity,
-  Q extends keyof QueryGenqlSelection = UniqueQueryOf<E>,
-> = E extends keyof typeof DEFAULT_SELECTION
-  ? AsExtending<(typeof DEFAULT_SELECTION)[E], SelectionOf<Q>>
-  : AsExtending<{ __scalar: true }, SelectionOf<Q>>
+type DefaultSelectionOf<E extends AnyEntity> =
+  E extends keyof typeof DEFAULT_SELECTION
+    ? (typeof DEFAULT_SELECTION)[E]
+    : { __scalar: true }
+
+type Fallback<T1, T2> = undefined extends T1 ? T2 : T1
 
 type WhereOf<Q extends keyof QueryGenqlSelection> =
   NonNullable<ArgsOf<Q>> extends { where?: infer W | null } ? W : never
@@ -75,7 +73,7 @@ type ResultOf<
   Q extends keyof QueryGenqlSelection,
   S,
 > = QueryResult<{
-  [K in Q]: undefined extends S ? DefaultSelectionOf<E> : S
+  [K in Q]: Fallback<S, DefaultSelectionOf<E>>
 }>
 
 type Extracted<T> = Exclude<T[keyof T & string], null>
@@ -117,30 +115,9 @@ type PaginationResultOf<
 type NodeTypeOf<R extends PaginationResult<unknown>> =
   R['edges'][number]['node']
 
-class Pagination<N> {
-  private _cursor: string | null | undefined = undefined
-  private _hasNextPage: boolean = true
-
-  constructor(
-    private fetchPage: (
-      cursor: string | null | undefined
-    ) => Promise<PaginationResult<N>>
-  ) {}
-
-  async nextPage(): Promise<N[]> {
-    if (!this._hasNextPage) {
-      return []
-    }
-    const result = await this.fetchPage(this._cursor)
-    this._cursor = result.pageInfo.endCursor
-    this._hasNextPage = result.pageInfo.hasNextPage
-
-    return result.edges.map((e) => e.node)
-  }
-
-  async fetchAll(): Promise<N[]> {
-    return this.fetch(Infinity)
-  }
+abstract class Pagination<N> {
+  protected abstract _hasNextPage: boolean
+  abstract nextPage(): Promise<N[]>
 
   async fetch(limit: number): Promise<N[]> {
     let results: N[] = []
@@ -154,8 +131,63 @@ class Pagination<N> {
     return results.slice(0, limit)
   }
 
+  async fetchAll(): Promise<N[]> {
+    return this.fetch(Infinity)
+  }
+
   public get hasNextPage() {
     return this._hasNextPage
+  }
+}
+
+class OffsetPagination<N> extends Pagination<N> {
+  private _offset: number | undefined = undefined
+  protected _hasNextPage: boolean = true
+
+  constructor(
+    private fetchPage: (offset: number | undefined) => Promise<N[]>,
+    private _pageSize: number
+  ) {
+    super()
+  }
+
+  async nextPage(): Promise<N[]> {
+    if (!this._hasNextPage) {
+      return []
+    }
+    const result = await this.fetchPage(this._offset)
+    this._offset = (this._offset || 0) + result.length
+    this._hasNextPage = result.length === this._pageSize
+
+    return result
+  }
+
+  public get offset() {
+    return this._offset
+  }
+}
+
+class ConnectionPagination<N> extends Pagination<N> {
+  private _cursor: string | null | undefined = undefined
+  protected _hasNextPage: boolean = true
+
+  constructor(
+    private fetchPage: (
+      cursor: string | null | undefined
+    ) => Promise<PaginationResult<N>>
+  ) {
+    super()
+  }
+
+  async nextPage(): Promise<N[]> {
+    if (!this._hasNextPage) {
+      return []
+    }
+    const result = await this.fetchPage(this._cursor)
+    this._cursor = result.pageInfo.endCursor
+    this._hasNextPage = result.pageInfo.hasNextPage
+
+    return result.edges.map((e) => e.node)
   }
 
   public get cursor() {
@@ -164,11 +196,24 @@ class Pagination<N> {
 }
 
 type PaginationQuerySelection<E extends AnyEntity, S> = {
-  edges: { node: undefined extends S ? DefaultSelectionOf<E> : S }
+  edges: { node: Fallback<S, DefaultSelectionOf<E>> }
   pageInfo: { hasNextPage: true; endCursor: true }
 }
 
-class EntityQueryUtils<E extends AnyEntity> {
+export enum PaginationType {
+  Offset,
+  Connection,
+}
+
+type PaginationFor<
+  P extends PaginationType,
+  E extends AnyEntity,
+  S extends SelectionOf<MultiQueryOf<E>> | undefined,
+> = P extends PaginationType.Connection
+  ? ConnectionPagination<NodeTypeOf<PaginationResultOf<E, S>>>
+  : OffsetPagination<ExtractedResult<E, UniqueQueryOf<E>, S>>
+
+class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
   private defaultSelection: DefaultSelectionOf<E>
 
   constructor(
@@ -176,7 +221,8 @@ class EntityQueryUtils<E extends AnyEntity> {
       query: Q
     ) => Promise<FieldsSelection<Query, Q>>,
     private config: Config,
-    private entity: E
+    private entity: E,
+    private paginationType: P
   ) {
     this.defaultSelection = (
       entity in DEFAULT_SELECTION
@@ -185,7 +231,46 @@ class EntityQueryUtils<E extends AnyEntity> {
     ) as DefaultSelectionOf<E>
   }
 
-  public paginate<
+  private offsetPagination<
+    A extends CommonArgs<MultiQueryOf<E>>,
+    S extends SelectionOf<MultiQueryOf<E>> | undefined,
+  >(args: { select?: S; pageSize?: number } & A) {
+    const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
+    const pageSize = args.pageSize || this.config.resultsPerQueryLimit
+    const fetchPage = async (offset: number | undefined) => {
+      const querySelection = args.select || this.defaultSelection
+      const queryArgs = {
+        where: args.where,
+        orderBy: args.orderBy,
+        limit: pageSize,
+        offset,
+      }
+      const query = {
+        [multiQuery]: { __args: queryArgs, ...querySelection },
+      } as {
+        [K in MultiQueryOf<E>]: { __args: typeof queryArgs } & Fallback<
+          S,
+          DefaultSelectionOf<E>
+        >
+      }
+      const page = await this.runQuery(query)
+      if (page && multiQuery in page && page[multiQuery as keyof typeof page]) {
+        return page[multiQuery as keyof typeof page] as ExtractedResult<
+          E,
+          UniqueQueryOf<E>,
+          S
+        >[]
+      }
+      throw new UnexpectedEmptyResult(multiQuery, page)
+    }
+
+    return new OffsetPagination<ExtractedResult<E, UniqueQueryOf<E>, S>>(
+      fetchPage,
+      pageSize
+    )
+  }
+
+  private connectionPagination<
     A extends CommonArgs<MultiQueryOf<E>>,
     S extends SelectionOf<MultiQueryOf<E>> | undefined,
   >(args: { select?: S; pageSize?: number } & A) {
@@ -196,9 +281,10 @@ class EntityQueryUtils<E extends AnyEntity> {
       const querySelection: PaginationQuerySelection<E, S> = {
         edges: {
           node: {
-            ...((args.select || this.defaultSelection) as undefined extends S
-              ? DefaultSelectionOf<E>
-              : S),
+            ...((args.select || this.defaultSelection) as Fallback<
+              S,
+              DefaultSelectionOf<E>
+            >),
           },
         },
         pageInfo: {
@@ -207,7 +293,8 @@ class EntityQueryUtils<E extends AnyEntity> {
         },
       }
       const queryArgs = {
-        ...{ where: args.where, orderBy: args.orderBy },
+        where: args.where,
+        orderBy: args.orderBy,
         first: args.pageSize || this.config.resultsPerQueryLimit,
         after: cursor,
       }
@@ -235,7 +322,20 @@ class EntityQueryUtils<E extends AnyEntity> {
       throw new UnexpectedEmptyResult(connectionQuery, page)
     }
 
-    return new Pagination<NodeTypeOf<PaginationResultOf<E, S>>>(fetchPage)
+    return new ConnectionPagination<NodeTypeOf<PaginationResultOf<E, S>>>(
+      fetchPage
+    )
+  }
+
+  public paginate<
+    A extends CommonArgs<MultiQueryOf<E>>,
+    S extends SelectionOf<MultiQueryOf<E>> | undefined,
+  >(args: { select?: S; pageSize?: number } & A): PaginationFor<P, E, S> {
+    if (this.paginationType === PaginationType.Connection) {
+      return this.connectionPagination<A, S>(args) as PaginationFor<P, E, S>
+    } else {
+      return this.offsetPagination<A, S>(args) as PaginationFor<P, E, S>
+    }
   }
 
   async byMany<
@@ -256,7 +356,12 @@ class EntityQueryUtils<E extends AnyEntity> {
               __args: { where: args.where(inputChunk) },
               ...(args.select || this.defaultSelection),
             },
-          } as { [K in MultiQueryOf<E>]: { __args: { where: W } } & S }
+          } as {
+            [K in MultiQueryOf<E>]: { __args: { where: W } } & Fallback<
+              S,
+              DefaultSelectionOf<E>
+            >
+          }
           const result = await this.runQuery(query)
 
           if (
@@ -288,7 +393,12 @@ class EntityQueryUtils<E extends AnyEntity> {
         },
         ...(select || this.defaultSelection),
       },
-    } as { [K in UniqueQueryOf<E>]: { __args: { where: { id: string } } } & S }
+    } as {
+      [K in UniqueQueryOf<E>]: { __args: { where: { id: string } } } & Fallback<
+        S,
+        DefaultSelectionOf<E>
+      >
+    }
     const result = await this.runQuery(query)
 
     if (uniqueQuery in result && result[uniqueQuery as keyof typeof result]) {
@@ -313,19 +423,20 @@ class EntityQueryUtils<E extends AnyEntity> {
   }
 }
 
-type AllEntitiesQueryUtils = {
-  [K in AnyEntity]: EntityQueryUtils<K>
+type AllEntitiesQueryUtils<P extends PaginationType> = {
+  [K in AnyEntity]: EntityQueryUtils<K, P>
 }
 
-export class QueryApi {
+export class QueryApi<P extends PaginationType = PaginationType.Connection> {
   private _config: Config
   private _requestsQueue: Queue
   private _client: Client
   private _debug: Debugger
-  public query: AllEntitiesQueryUtils
+  public query: AllEntitiesQueryUtils<P>
 
   public constructor(
     private url: string,
+    private paginationType: P,
     config?: Partial<Config>
   ) {
     this._config = { ...DEFAULT_CONFIG, ...config }
@@ -341,13 +452,14 @@ export class QueryApi {
     this.query = Object.fromEntries(
       Object.keys(ENTITY_INFO).map((e) => [
         e,
-        new EntityQueryUtils(
+        new EntityQueryUtils<AnyEntity, P>(
           this.runQuery.bind(this),
           this._config,
-          e as AnyEntity
+          e as AnyEntity,
+          this.paginationType
         ),
       ])
-    ) as AllEntitiesQueryUtils
+    ) as AllEntitiesQueryUtils<P>
   }
 
   public runQuery<Q extends QueryGenqlSelection>(

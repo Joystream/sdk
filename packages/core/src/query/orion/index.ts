@@ -1,5 +1,10 @@
 import _ from 'lodash'
-import { QueryApi, AnyEntity } from './__generated__/QueryApi'
+import {
+  QueryApi,
+  AnyEntity,
+  PaginationType,
+  Config,
+} from './__generated__/QueryApi'
 import { ENTITY_INFO } from './__generated__/entityInfo'
 
 export const ALL_ENTITIES = Object.keys(ENTITY_INFO) as AnyEntity[]
@@ -27,5 +32,9 @@ export const VISIBLE_ENTITIES = _.difference(
   HIDDEN_ENTITIES
 ) as Exclude<AnyEntity, (typeof HIDDEN_ENTITIES)[number]>[]
 
-export const OrionApi = QueryApi
+export class OrionApi extends QueryApi<PaginationType.Connection> {
+  constructor(url: string, config?: Partial<Config>) {
+    super(url, PaginationType.Connection, config)
+  }
+}
 export { AnyEntity }
