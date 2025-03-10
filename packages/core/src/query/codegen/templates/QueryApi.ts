@@ -173,7 +173,7 @@ class EntityQueryUtils<E extends AnyEntity> {
   public paginate<
     A extends CommonArgs<MultiQueryOf<E>>,
     S extends SelectionOf<MultiQueryOf<E>>,
-  >(args: A, select: S, size?: number) {
+  >(args: { select: S; pageSize?: number } & A) {
     const connectionQuery = ENTITY_INFO[this.entity]['connectionQuery']
     const fetchPage = async (
       cursor: string | null | undefined
@@ -181,7 +181,7 @@ class EntityQueryUtils<E extends AnyEntity> {
       const querySelection: PaginationQuerySelection<S> = {
         edges: {
           node: {
-            ...select,
+            ...args.select,
           },
         },
         pageInfo: {
@@ -190,8 +190,8 @@ class EntityQueryUtils<E extends AnyEntity> {
         },
       }
       const queryArgs = {
-        ...(args || {}),
-        first: size || this.config.resultsPerQueryLimit,
+        ...{ where: args.where, orderBy: args.orderBy },
+        first: args.pageSize || this.config.resultsPerQueryLimit,
         after: cursor,
       }
       const query = {
@@ -227,30 +227,35 @@ class EntityQueryUtils<E extends AnyEntity> {
     S extends
       | SelectionOf<MultiQueryOf<E>>
       | DefaultSelectionOf<E> = DefaultSelectionOf<E>,
-  >(
-    whereGenerator: (input: I[]) => W,
-    input: I[],
+  >(args: {
+    where: (input: I[]) => W
+    input: I[]
     select?: S
-  ): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
+  }): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
     const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
     const results = await Promise.all(
-      _.chunk(input, this.config.inputBatchSize).map(async (inputChunk) => {
-        const query = {
-          [multiQuery]: {
-            __args: { where: whereGenerator(inputChunk) },
-            ...(select || this.defaultSelection),
-          },
-        } as { [K in MultiQueryOf<E>]: { __args: { where: W } } & S }
-        const result = await this.runQuery(query)
+      _.chunk(args.input, this.config.inputBatchSize).map(
+        async (inputChunk) => {
+          const query = {
+            [multiQuery]: {
+              __args: { where: args.where(inputChunk) },
+              ...(args.select || this.defaultSelection),
+            },
+          } as { [K in MultiQueryOf<E>]: { __args: { where: W } } & S }
+          const result = await this.runQuery(query)
 
-        if (multiQuery in result && result[multiQuery as keyof typeof result]) {
-          const extracted = result[multiQuery as keyof typeof result]
-          if (extracted) {
-            return extracted
+          if (
+            multiQuery in result &&
+            result[multiQuery as keyof typeof result]
+          ) {
+            const extracted = result[multiQuery as keyof typeof result]
+            if (extracted) {
+              return extracted
+            }
           }
+          throw new UnexpectedEmptyResult(multiQuery)
         }
-        throw new UnexpectedEmptyResult(multiQuery)
-      })
+      )
     )
 
     return results.flat() as ExtractedResult<MultiQueryOf<E>, S>
@@ -287,11 +292,11 @@ class EntityQueryUtils<E extends AnyEntity> {
       | SelectionOf<MultiQueryOf<E>>
       | DefaultSelectionOf<E> = DefaultSelectionOf<E>,
   >(ids: string[], select?: S): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
-    return this.byMany(
-      (ids) => ({ id_in: ids }) as WhereOf<MultiQueryOf<E>>,
-      ids,
-      select
-    )
+    return this.byMany({
+      select,
+      where: (ids) => ({ id_in: ids }) as WhereOf<MultiQueryOf<E>>,
+      input: ids,
+    })
   }
 }
 

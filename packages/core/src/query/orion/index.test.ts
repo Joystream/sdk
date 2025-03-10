@@ -105,13 +105,11 @@ describe('OrionApi', () => {
     describe('nextPage', () => {
       test('App', async () => {
         const PAGE_SIZE = 3
-        const pagination = orionApi.query.App.paginate(
-          {
-            orderBy: ['id_DESC'],
-          },
-          { id: true, name: true },
-          PAGE_SIZE
-        )
+        const pagination = orionApi.query.App.paginate({
+          orderBy: ['id_DESC'],
+          select: { id: true, name: true },
+          pageSize: PAGE_SIZE,
+        })
         const expectedData = _.sortBy(
           _.range(1, 11).map((i) => ({
             id: i.toString(),
@@ -143,13 +141,11 @@ describe('OrionApi', () => {
     describe('fetchAll', () => {
       test('App', async () => {
         const PAGE_SIZE = 3
-        const pagination = orionApi.query.App.paginate(
-          {
-            orderBy: ['id_DESC'],
-          },
-          { id: true, name: true },
-          PAGE_SIZE
-        )
+        const pagination = orionApi.query.App.paginate({
+          orderBy: ['id_DESC'],
+          select: { id: true, name: true },
+          pageSize: PAGE_SIZE,
+        })
         expect(pagination.hasNextPage).toEqual(true)
         const results = await pagination.fetchAll()
         expect(pagination.hasNextPage).toEqual(false)
