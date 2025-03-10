@@ -128,15 +128,19 @@ class Pagination<N> {
   }
 
   async fetchAll(): Promise<N[]> {
+    return this.fetch(Infinity)
+  }
+
+  async fetch(limit: number): Promise<N[]> {
     let results: N[] = []
-    while (this._hasNextPage) {
+    while (this._hasNextPage && results.length < limit) {
       const pageResults = await this.nextPage()
       if (pageResults) {
         results = results.concat(pageResults)
       }
     }
 
-    return results
+    return results.slice(0, limit)
   }
 
   public get hasNextPage() {
