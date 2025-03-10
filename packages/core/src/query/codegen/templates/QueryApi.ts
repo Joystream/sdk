@@ -145,7 +145,10 @@ class OffsetPagination<N> extends Pagination<N> {
   protected _hasNextPage: boolean = true
 
   constructor(
-    private fetchPage: (offset: number | undefined) => Promise<N[]>,
+    private fetchPage: (
+      limit: number,
+      offset: number | undefined
+    ) => Promise<N[]>,
     private _pageSize: number
   ) {
     super()
@@ -155,11 +158,14 @@ class OffsetPagination<N> extends Pagination<N> {
     if (!this._hasNextPage) {
       return []
     }
-    const result = await this.fetchPage(this._offset)
-    this._offset = (this._offset || 0) + result.length
-    this._hasNextPage = result.length === this._pageSize
+    // Here we use a little trick to set the value of _hasNextPage:
+    // we set the limit to `this._pageSize + 1` and then drop the extra entity
+    // if needed
+    const result = await this.fetchPage(this._pageSize + 1, this._offset)
+    this._offset = (this._offset || 0) + Math.min(result.length, this._pageSize)
+    this._hasNextPage = result.length > this._pageSize
 
-    return result
+    return result.slice(0, this._pageSize)
   }
 
   public get offset() {
@@ -237,12 +243,12 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
   >(args: { select?: S; pageSize?: number } & A) {
     const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
     const pageSize = args.pageSize || this.config.resultsPerQueryLimit
-    const fetchPage = async (offset: number | undefined) => {
+    const fetchPage = async (limit: number, offset: number | undefined) => {
       const querySelection = args.select || this.defaultSelection
       const queryArgs = {
         where: args.where,
         orderBy: args.orderBy,
-        limit: pageSize,
+        limit,
         offset,
       }
       const query = {
