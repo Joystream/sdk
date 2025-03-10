@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "codegen": "yarn codegen:query-apis",
     "build": "yarn tsc -b",
-    "build:examples": "./scripts/build-examples.sh"
+    "build:examples": "./scripts/build-examples.sh",
+    "pack": "yarn workspaces foreach -Ap --include \"./packages/*\" pack"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
