@@ -6,7 +6,8 @@
   "author": "Leszek Wiesner",
   "main": "index.js",
   "dependencies": {
-    "@polkadot/api": "^10.13",
+    "@joystream/types": "^4.6.1",
+    "@polkadot/api": "10.7.1",
     "@talismn/connect-wallets": "^1.2.8",
     "@walletconnect/modal": "^2.7",
     "@walletconnect/universal-provider": "^2.18",

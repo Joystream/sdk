@@ -39,7 +39,8 @@
     "typescript-eslint": "^8.22.0"
   },
   "resolutions": {
-    "@mui/styled-engine": "npm:@mui/styled-engine-sc@^6.4.6"
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@^6.4.6",
+    "@polkadot/api": "10.7.1"
   },
   "prettier": "@joystream/prettier-config",
   "engines": {
