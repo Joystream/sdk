@@ -49,8 +49,56 @@ describe('OrionApi', () => {
         })
       }
     })
+    describe('Standard case, custom selection', () => {
+      test(`Channel`, async () => {
+        const channel = await orionApi.query.Channel.byId('1', {
+          rewardAccount: true,
+          videos: {
+            license: {
+              code: true,
+            },
+          },
+        })
+        expect(channel.rewardAccount).toBe('string')
+        expect(channel.videos.length).toBe(1)
+        expect(channel.videos[0].license?.code).toBe(1)
+        expectTypeCheck<{
+          rewardAccount: string
+          videos: { license: { code: number | null } | null }[]
+        }>()
+          .ofVariable(channel)
+          .toPass()
+      })
+    })
   })
-  // TODO: byMany, byIds
+  describe('byIds', () => {
+    describe('Standard case, custom selection', () => {
+      test(`App`, async () => {
+        const ids = ['1', '2', '3']
+        const apps = await orionApi.query.App.byIds(ids, {
+          id: true,
+          ownerMember: {
+            handle: true,
+          },
+        })
+        expect(apps.length).toBe(3)
+        for (const id of ids) {
+          expect(apps.map((app) => app.id)).toContain(id)
+          expect(apps.find((app) => app.id === id)?.ownerMember.handle).toBe(
+            'string'
+          )
+        }
+        expectTypeCheck<
+          {
+            id: string
+            ownerMember: { handle: string }
+          }[]
+        >()
+          .ofVariable(apps)
+          .toPass()
+      })
+    })
+  })
   describe('Scalar fields typing', () => {
     test('BigInt', async () => {
       const { dataObjectsSizeLimit } =
