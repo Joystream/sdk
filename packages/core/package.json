@@ -22,8 +22,18 @@
     "@types/lodash": "^4",
     "@types/ws": "^8.5.14"
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./lib/*/index.d.ts"
+      ]
+    }
+  },
   "exports": {
-    "./*": "./lib/*/index.js"
+    "./*": {
+      "types": "./lib/*/index.d.ts",
+      "default": "./lib/*/index.js"
+    }
   },
   "engines": {
     "node": "^20"
