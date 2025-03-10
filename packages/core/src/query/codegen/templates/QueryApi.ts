@@ -88,7 +88,7 @@ type PaginationResult<N> = {
   }[]
   pageInfo: {
     hasNextPage: boolean
-    endCursor: string
+    endCursor: string | null
   }
 }
 
