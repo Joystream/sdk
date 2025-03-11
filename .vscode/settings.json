@@ -1,5 +1,0 @@
-{
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "eslint.workingDirectories": [".", "./packages/*"],
-  "editor.formatOnSave": true
-}

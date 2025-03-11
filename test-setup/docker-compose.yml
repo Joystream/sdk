@@ -1,3 +1,0 @@
-name: 'sdk-testing-setup'
-include:
-  - docker-compose.orion.yml

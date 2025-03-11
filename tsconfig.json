@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "composite": true
-  },
-  "files": [], // See: https://www.typescriptlang.org/docs/handbook/project-references.html#overall-structure
-  "references": [{ "path": "./packages/core/tsconfig.json" }]
-}
