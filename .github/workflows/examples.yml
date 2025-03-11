@@ -1,0 +1,68 @@
+name: Examples
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Run build
+        run: yarn build
+      - name: Build examples
+        run: yarn build:examples
+      - name: Ensure the repository contains up-to-date example builds
+        run: ./scripts/check-git-diff.sh
+  run_ts:
+    name: Run examples (TypeScript)
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Run examples
+        run: |
+          yarn run-example query-node ts
+  run_js:
+    name: Run examples (JavaScript)
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Run build
+        run: yarn build
+      - name: Build examples
+        run: yarn build:examples
+      - name: Run examples
+        run: |
+          yarn run-example query-node js
