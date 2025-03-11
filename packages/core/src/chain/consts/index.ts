@@ -1,4 +1,0 @@
-export const MAINNET_GENESIS_HASH =
-  '0x6b5e488e0fa8f9821110d5c13f4c468abcd43ce5e297e62b34c53c3346465956'
-export const SS58_PREFIX = 126
-export const BLOCK_TIME_MS = 6000
