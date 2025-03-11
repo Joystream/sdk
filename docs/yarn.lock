@@ -2631,6 +2631,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@joystream/sdk-docs@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@joystream/sdk-docs@workspace:."
+  dependencies:
+    "@docusaurus/core": "npm:3.7.0"
+    "@docusaurus/module-type-aliases": "npm:3.7.0"
+    "@docusaurus/preset-classic": "npm:3.7.0"
+    "@docusaurus/tsconfig": "npm:3.7.0"
+    "@docusaurus/types": "npm:3.7.0"
+    "@mdx-js/react": "npm:^3.0.0"
+    clsx: "npm:^2.0.0"
+    prism-react-renderer: "npm:^2.3.0"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
+    typescript: "npm:~5.6.2"
+  languageName: unknown
+  linkType: soft
+
 "@jridgewell/gen-mapping@npm:^0.3.5":
   version: 0.3.8
   resolution: "@jridgewell/gen-mapping@npm:0.3.8"
@@ -5279,24 +5297,6 @@ __metadata:
   checksum: 10c0/8948d3d03063fb68e04a1e386875f8c3bcc398fc375f535f2b438fad8f41bf1afa6f5e70893ba44f4ae884c089247e0a31045722fa6ff0f01d228da103f1811d
   languageName: node
   linkType: hard
-
-"docs@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "docs@workspace:."
-  dependencies:
-    "@docusaurus/core": "npm:3.7.0"
-    "@docusaurus/module-type-aliases": "npm:3.7.0"
-    "@docusaurus/preset-classic": "npm:3.7.0"
-    "@docusaurus/tsconfig": "npm:3.7.0"
-    "@docusaurus/types": "npm:3.7.0"
-    "@mdx-js/react": "npm:^3.0.0"
-    clsx: "npm:^2.0.0"
-    prism-react-renderer: "npm:^2.3.0"
-    react: "npm:^19.0.0"
-    react-dom: "npm:^19.0.0"
-    typescript: "npm:~5.6.2"
-  languageName: unknown
-  linkType: soft
 
 "dom-converter@npm:^0.2.0":
   version: 0.2.0
