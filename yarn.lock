@@ -3290,15 +3290,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@joystream/sdk-examples-query-node@workspace:examples/query-node":
-  version: 0.0.0-use.local
-  resolution: "@joystream/sdk-examples-query-node@workspace:examples/query-node"
-  dependencies:
-    "@joystream/sdk-core": "npm:^1.0.0"
-    typescript: "npm:^5.7.3"
-  languageName: unknown
-  linkType: soft
-
 "@joystream/sdk@workspace:.":
   version: 0.0.0-use.local
   resolution: "@joystream/sdk@workspace:."
