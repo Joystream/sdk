@@ -101,6 +101,32 @@ const DEFAULT_TRANSFORM_CODE = (code: string) => `
 }
 `
 
+function codePreTransform(code?: string) {
+  if (
+    !code ||
+    !(code.includes('@snippet-begin') || code.includes('@snippet-end'))
+  ) {
+    return code
+  }
+  let start = false
+  let whitespaceToRm = ''
+  let transformed = ''
+  for (const line of code.split('\n')) {
+    if (line.includes('@snippet-end')) {
+      break
+    }
+    if (start) {
+      transformed += line.replace(new RegExp(`^${whitespaceToRm}`), '') + '\n'
+    }
+    if (line.includes('@snippet-begin')) {
+      start = true
+      whitespaceToRm = line.match(/^[\s]+/)[0]
+    }
+  }
+
+  return transformed
+}
+
 export default function Playground({
   children,
   transformCode,
@@ -119,7 +145,7 @@ export default function Playground({
   return (
     <div className={styles.playgroundContainer}>
       <LiveProvider
-        code={children?.replace(/\n$/, '')}
+        code={codePreTransform(children).replace(/\n$/, '')}
         noInline={noInline}
         transformCode={transformCode ?? DEFAULT_TRANSFORM_CODE}
         theme={prismTheme}

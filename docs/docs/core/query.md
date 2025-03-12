@@ -4,6 +4,28 @@ sidebar_position: 1
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import CodeBlock from '@theme/CodeBlock';
+import qn_byId1 from '!!raw-loader!../../src/snippets/query/queryNode/byId1.ts';
+import qn_byId2 from '!!raw-loader!../../src/snippets/query/queryNode/byId2.ts';
+import qn_byId3 from '!!raw-loader!../../src/snippets/query/queryNode/byId3.ts';
+import qn_byIds1 from '!!raw-loader!../../src/snippets/query/queryNode/byIds1.ts';
+import qn_byIds2 from '!!raw-loader!../../src/snippets/query/queryNode/byIds2.ts';
+import qn_byMany1 from '!!raw-loader!../../src/snippets/query/queryNode/byMany1.ts';
+import qn_byMany2 from '!!raw-loader!../../src/snippets/query/queryNode/byMany2.ts';
+import qn_paginate1 from '!!raw-loader!../../src/snippets/query/queryNode/paginate1.ts';
+import qn_paginate2 from '!!raw-loader!../../src/snippets/query/queryNode/paginate2.ts';
+import qn_custom1 from '!!raw-loader!../../src/snippets/query/queryNode/custom1.ts';
+import orion_byId1 from '!!raw-loader!../../src/snippets/query/orion/byId1.ts';
+import orion_byId2 from '!!raw-loader!../../src/snippets/query/orion/byId2.ts';
+import orion_byId3 from '!!raw-loader!../../src/snippets/query/orion/byId3.ts';
+import orion_byIds1 from '!!raw-loader!../../src/snippets/query/orion/byIds1.ts';
+import orion_byIds2 from '!!raw-loader!../../src/snippets/query/orion/byIds2.ts';
+import orion_byIds3 from '!!raw-loader!../../src/snippets/query/orion/byIds3.ts';
+import orion_byMany1 from '!!raw-loader!../../src/snippets/query/orion/byMany1.ts';
+import orion_byMany2 from '!!raw-loader!../../src/snippets/query/orion/byMany2.ts';
+import orion_paginate1 from '!!raw-loader!../../src/snippets/query/orion/paginate1.ts';
+import orion_paginate2 from '!!raw-loader!../../src/snippets/query/orion/paginate2.ts';
+import orion_custom1 from '!!raw-loader!../../src/snippets/query/orion/custom1.ts';
 
 # Query module
 
@@ -79,101 +101,48 @@ qApi.query.**_ENTITY_NAME_**.byId(**_ID_**, **_SELECTION_**) // Selects specifie
 
 <Tabs>
   <TabItem value="query-node" label="Query node" default>
-
-```typescript live
-// Get all scalar fields of member by id=336
-const member = await qnApi.query.Membership.byId('336')
-log(member)
-```
-
-```typescript live
-// Get proposal by id=9, along with some of its details
-const proposal = await qnApi.query.Proposal.byId('9', {
-  __scalar: true, // Retrieve all scalar fields of Proposal
-  details: {
-    __typename: true,
-    on_CreateWorkingGroupLeadOpeningProposalDetails: {
-      group: {
-        name: true,
-      },
-    },
-    // ...handle other types if needed
-  },
-})
-log(proposal)
-```
-
-```typescript live
-// Get election by id, along with candidating members and their vote power
-const election = await qnApi.query.ElectionRound.byId('00000014', {
-  __scalar: true, // Retrieve all scalar fields of ElectionRound
-  candidates: {
-    member: { id: true, handle: true },
-    votePower: true,
-  },
-})
-log(election)
-```
-
+    <CodeBlock languague="typescript" live>
+      {qn_byId1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_byId2}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_byId3}
+    </CodeBlock>
   </TabItem>
   <TabItem value="orion" label="Orion" default>
-
-```typescript live
-// Get all scalar fields of channel by id=1
-const channel = await orionApi.query.Channel.byId('1')
-log(channel)
-```
-
-```typescript live
-// Get channel by id, along with those of its videos which are longer than 1 hour
-const channelWithVideos = await orionApi.query.Channel.byId('7692', {
-  __scalar: true, // Get all scalar fields of Channel
-  videos: {
-    __args: { where: { duration_gt: 3600 } },
-    __scalar: true, // Get all scalar fields of Video
-  },
-})
-log(channelWithVideos)
-```
-
-```typescript live
-// Get specific fields of a video by id=1
-const video = await orionApi.query.Video.byId('1', {
-  id: true,
-  title: true,
-  duration: true,
-  category: {
-    name: true,
-  },
-  channel: {
-    title: true,
-  },
-})
-log(video)
-```
-
+    <CodeBlock languague="typescript" live>
+      {orion_byId1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_byId2}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_byId3}
+    </CodeBlock>
   </TabItem>
   <TabItem value="storage-squid" label="Storage squid" default>
 
-```typescript
-// Get all scalar fields of storage bucket by id=0
-const storageBucket = await storageSquidApi.query.StorageBucket.byId('0')
-```
+    ```typescript
+    // Get all scalar fields of storage bucket by id=0
+    const storageBucket = await storageSquidApi.query.StorageBucket.byId('0')
+    ```
 
-```typescript
-// Get storage bag of channel 1, along with some information about its data objects
-const storageBag = await storageSquidApi.query.StorageBag.byId(
-  'dynamic:channel:1',
-  {
-    __scalar: true,
-    objects: {
-      id: true,
-      ipfsHash: true,
-      size: true,
-    },
-  }
-)
-```
+    ```typescript
+    // Get storage bag of channel 1, along with some information about its data objects
+    const storageBag = await storageSquidApi.query.StorageBag.byId(
+      'dynamic:channel:1',
+      {
+        __scalar: true,
+        objects: {
+          id: true,
+          ipfsHash: true,
+          size: true,
+        },
+      }
+    )
+    ```
 
   </TabItem>
 </Tabs>
@@ -197,68 +166,28 @@ qApi.query.**_ENTITY_NAME_**.byIds(**_IDS_**, **_SELECTION_**) // Selects specif
 
 <Tabs>
   <TabItem value="query-node" label="Query node" default>
-    ```typescript live
-    // Get all scalar fields of a few different members:
-    const members = await qnApi.query.Membership.byIds(['4129', '3234', '957'])
-    log(members)
-    ```
-
-    ```typescript live
-    // Get a few proposals along with some of their details
-    const proposals = await qnApi.query.Proposal.byIds(['9', '10', '11'], {
-      __scalar: true,
-      details: {
-        on_CreateWorkingGroupLeadOpeningProposalDetails: {
-          group: {
-            name: true,
-          },
-        },
-        // ...handle other types if needed
-      },
-    })
-    log(proposals)
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {qn_byIds1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_byIds2}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="orion" label="Orion" default>
-    ```typescript live
-    // Get all scalar fields of a few channels
-    const channels = await orionApi.query.Channel.byIds(['1', '7692', '7698'])
-    log(channels)
-    ```
-
-    ```typescript live
-    // Query a few channels, along with those of their videos which are longer than 1 hour
-    const channelWithVideos = await orionApi.query.Channel.byIds(['1', '7692', '7698'], {
-      __scalar: true,
-      videos: {
-        __args: { where: { duration_gt: 3600 } },
-        __scalar: true,
-      },
-    })
-    log(channelWithVideos)
-    ```
-
-    ```typescript live
-    // Get specific fields of a few videos
-    const videos = await orionApi.query.Video.byIds(['1', '5', '905'], {
-      id: true,
-      title: true,
-      duration: true,
-      category: {
-        name: true,
-      },
-      channel: {
-        title: true,
-      },
-    })
-    log(videos)
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {orion_byIds1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_byIds2}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_byIds3}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
+    
     ```typescript
     // Get all scalar fields of a few storage buckets
     const storageBucket = await storageSquidApi.query.StorageBucket.byIds(['0', '1', '2'])
@@ -316,66 +245,21 @@ qApi.query.**_ENTITY_NAME_**.byMany(\{
 
 <Tabs>
   <TabItem value="query-node" label="Query node" default>
-    ```typescript live
-    // Get all scalar fields of a few different members by their handles:
-    const members = await qnApi.query.Membership.byMany({
-      input: ['leet_joy', 'Jenny', 'Codefikeyz'],
-      where: (handles) => ({ handle_in: handles }),
-    })
-    log(members)
-    ```
-
-    ```typescript live
-    // Get specific fields of a few different members by their handles:
-    const members = await qnApi.query.Membership.byMany({
-      input: ['leet_joy', 'Jenny', 'Codefikeyz'],
-      where: (handles) => ({ handle_in: handles }),
-      select: {
-        id: true,
-        handle: true,
-        metadata: {
-          name: true,
-          about: true,
-        },
-      },
-    })
-    log(members)
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {qn_byMany1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_byMany2}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="orion" label="Orion" default>
-    ```typescript live
-    // Get all scalar fields of a few channels by a list of title keywords
-    const keywords = ['Bitcoin', 'Ethereum', 'Dogecoin']
-    const channels = await orionApi.query.Channel.byMany({
-      input: keywords,
-      where: (keywords) => ({
-        OR: keywords.map((k) => ({ title_containsInsensitive: k }))
-      }),
-    })
-    log(channels)
-    ```
-
-    ```typescript live
-    // Query specific fields of videos by their ytVideoIds
-    const videos = await orionApi.query.Video.byMany({
-      input: ["GlIQQX5s2bw", "rSiuFHKnhcA", "WYb7884hM6o"],
-      where: (ytVideoIds) => ({ ytVideoId_in: ytVideoIds }),
-      select: {
-        id: true,
-        ytVideoId: true,
-        title: true,
-        description: true,
-        channel: {
-          id: true,
-          title: true,
-        },
-      },
-    })
-    log(videos)
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {orion_byMany1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_byMany2}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
@@ -452,81 +336,25 @@ interface Pagination<Entity> {
 
 <Tabs>
   <TabItem value="query-node" label="Query node" default>
-    ```typescript live
-    // Get ids and handles of ALL members,
-    // fetching no more than 1000 members in a single query
-    const members = await qnApi.query.Membership.paginate({
-      orderBy: ["createdAt_ASC"],
-      select: { id: true, handle: true },
-      pageSize: 1000,
-    }).fetchAll()
-    log(members)
-    ```
-
-    ```typescript live
-    // Fetch data about historical elections and log each page of 10 results separately
-    const electionPagination = qnApi.query.ElectionRound.paginate({
-      select: {
-        id: true,
-        isFinished: true,
-        candidates: {
-          member: {
-            id: true,
-            handle: true,
-          },
-          votePower: true,
-        },
-      },
-      where: { isFinished_eq: true },
-      orderBy: ["createdAt_DESC"],
-      pageSize: 10,
-    });
-    let i = 1;
-    while (electionPagination.hasNextPage) {
-      const page = await electionPagination.nextPage();
-      log(`Page ${i}`)
-      log(page)
-      ++i;
-    }
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {qn_paginate1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_paginate2}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="orion" label="Orion" default>
-    ```typescript live
-    // Get ids and titles of ALL channels,
-    // fetching no more than 1000 channels in a single query
-    const channels = await orionApi.query.Channel.paginate({
-      orderBy: ["createdAt_ASC"],
-      select: { id: true, title: true },
-      pageSize: 1000,
-    }).fetchAll();
-    log(channels)
-    ```
-
-    ```typescript live
-    // Fetch data about creator tokens and log each page of 100 entries separately
-    const crtPagination = orionApi.query.CreatorToken.paginate({
-      orderBy: ["createdAt_ASC"],
-      select: {
-        id: true,
-        symbol: true,
-        lastPrice: true,
-      },
-      pageSize: 100,
-    });
-    let i = 1;
-    while (crtPagination.hasNextPage) {
-      const page = await crtPagination.nextPage();
-      log(`Page ${i}`);
-      log(page);
-      ++i;
-    }
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {orion_paginate1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_paginate2}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
+  
     ```typescript
     // Get ids ALL storage bags,
     // fetching no more than 1000 bags in a single query
@@ -571,44 +399,15 @@ If you have more specific needs, you can access the underlying [GenQL](https://g
 
 <Tabs>
   <TabItem value="query-node" label="Query node" default>
-    ```typescript live
-    const result = await qnApi.client.query({
-      postsByText: {
-        __args: {
-          text: "Joystream",
-          limit: 10,
-        },
-        item: {
-          __typename: true,
-          on_ForumPost: {
-            id: true,
-            text: true,
-          },
-        },
-      },
-    })
-    log(result)
-    ```
+    <CodeBlock languague="typescript" live>
+      {qn_custom1}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="orion" label="Orion" default>
-    ```typescript live
-    const result = await orionApi.client.query({
-      tokensWithPriceChange: {
-        __args: {
-          periodDays: 30,
-          limit: 10,
-          minVolume: "10000000000", // in HAPI
-        },
-        creatorToken: {
-          id: true,
-          symbol: true,
-        },
-        pricePercentageChange: true,
-      },
-    })
-    log(result)
-    ```
+    <CodeBlock languague="typescript" live>
+      {orion_custom1}
+    </CodeBlock>
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>

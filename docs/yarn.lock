@@ -2660,7 +2660,7 @@ __metadata:
 
 "@joystream/sdk-core@file:../packages/core/package.tgz::locator=%40joystream%2Fsdk-docs%40workspace%3A.":
   version: 1.0.0
-  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=272607&locator=%40joystream%2Fsdk-docs%40workspace%3A."
+  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=81321b&locator=%40joystream%2Fsdk-docs%40workspace%3A."
   dependencies:
     "@joystream/types": "npm:^4.6.1"
     "@polkadot/api": "npm:10.7.1"
@@ -2671,7 +2671,7 @@ __metadata:
     debug: "npm:^4.4.0"
     lodash: "npm:^4.17.21"
     queue: "npm:^6.0.0"
-  checksum: 10c0/cdaa8dc16ce061a9bd971a27798ec795595df23bb612d4c4802e579f25bd694b18b0bffb472bad1f7b2ddaf8c708c1f20b002bdc4c75d9aaef8d883c086700da
+  checksum: 10c0/69c8a69f5cb9e98287539680545b6c1a63976fb424e38a9bff79ce3120ab5ada7859668c037cf58adbae02d06e14dd2b83de61130420cbdcdfdae2187ba0ed6c
   languageName: node
   linkType: hard
 
@@ -2689,6 +2689,7 @@ __metadata:
     "@mdx-js/react": "npm:^3.0.0"
     clsx: "npm:^2.0.0"
     prism-react-renderer: "npm:^2.3.0"
+    raw-loader: "npm:^4.0.2"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     typescript: "npm:~5.6.2"
@@ -12241,6 +12242,18 @@ __metadata:
     iconv-lite: "npm:0.4.24"
     unpipe: "npm:1.0.0"
   checksum: 10c0/b201c4b66049369a60e766318caff5cb3cc5a900efd89bdac431463822d976ad0670912c931fdbdcf5543207daf6f6833bca57aa116e1661d2ea91e12ca692c4
+  languageName: node
+  linkType: hard
+
+"raw-loader@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "raw-loader@npm:4.0.2"
+  dependencies:
+    loader-utils: "npm:^2.0.0"
+    schema-utils: "npm:^3.0.0"
+  peerDependencies:
+    webpack: ^4.0.0 || ^5.0.0
+  checksum: 10c0/981ebe65e1cee7230300d21ba6dcd8bd23ea81ef4ad2b167c0f62d93deba347f27921d330be848634baab3831cf9f38900af6082d6416c2e937fe612fa6a74ff
   languageName: node
   linkType: hard
 
