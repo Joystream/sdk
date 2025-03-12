@@ -16,6 +16,7 @@ export default [
       'packages/core/src/query/codegen/templates/*',
       'packages/core/src/query/**/__generated__/genql',
       '**/lib',
+      '**/build',
       'docs/.docusaurus',
     ],
   },

@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 import { KeyManager } from '@joystream/sdk-core/keys'
-import { Key } from '@joystream/sdk-core/src/keys/types'
+import { Key } from '@joystream/sdk-core/keys/types'
 
 export type KeyManagerContextValue = {
   keyManager?: KeyManager | null

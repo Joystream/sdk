@@ -19,7 +19,8 @@
     "codegen": "yarn codegen:query-apis",
     "build": "yarn tsc -b",
     "build:examples": "./scripts/build-examples.sh",
-    "pack": "yarn build && yarn workspaces foreach -Ap --include \"./packages/*\" pack"
+    "pack": "yarn build && yarn workspaces foreach -Ap --include \"./packages/*\" pack",
+    "pre-push": "./scripts/pre-push.sh"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
