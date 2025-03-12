@@ -35,6 +35,8 @@ jobs:
         with:
           node-version-file: 'package.json'
       - name: Install dependencies
+        run: yarn install --immutable
+      - name: Install /docs dependencies
         working-directory: ./docs
         run: yarn install --immutable
       - name: Test snippets
