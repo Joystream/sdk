@@ -289,7 +289,7 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
       }
       const queryArgs = {
         where: args.where,
-        orderBy: args.orderBy,
+        orderBy: args.orderBy || ['id_ASC'],
         first: args.pageSize || this.config.resultsPerQueryLimit,
         after: cursor,
       }
@@ -362,33 +362,16 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
     input: I[]
     select?: S
   }): Promise<ExtractedResult<MultiQueryOf<E>, S>> {
-    const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
     const results = await Promise.all(
       _.chunk(args.input, this.config.inputBatchSize).map(
         async (inputChunk) => {
-          const query = {
-            [multiQuery]: {
-              __args: { where: args.where(inputChunk) },
-              ...(args.select || this.defaultSelection),
-            },
-          } as {
-            [K in MultiQueryOf<E>]: { __args: { where: W } } & Fallback<
-              S,
-              DefaultSelectionOf<E>
-            >
-          }
-          const result = await this.runQuery(query)
+          const pagination = this.paginate({
+            select: args.select || this.defaultSelection,
+            where: args.where(inputChunk),
+          })
+          const result = await pagination.fetchAll()
 
-          if (
-            multiQuery in result &&
-            result[multiQuery as keyof typeof result]
-          ) {
-            const extracted = result[multiQuery as keyof typeof result]
-            if (extracted) {
-              return extracted
-            }
-          }
-          throw new UnexpectedEmptyResult(multiQuery)
+          return result
         }
       )
     )
