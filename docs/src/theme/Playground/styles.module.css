@@ -1,0 +1,23 @@
+.playgroundContainer {
+  margin-bottom: var(--ifm-leading);
+  border-radius: var(--ifm-global-radius);
+  box-shadow: var(--ifm-global-shadow-lw);
+  background-color: var(--ifm-color-gray-200);
+  overflow: hidden;
+}
+
+.playgroundEditor {
+  font: var(--ifm-code-font-size) / var(--ifm-pre-line-height)
+    var(--ifm-font-family-monospace) !important;
+  margin: 0.5rem;
+  /* rtl:ignore */
+  direction: ltr;
+}
+
+.playgroundEditor pre {
+  border-radius: var(--ifm-global-radius);
+}
+
+.playgroundPreview {
+  margin: 0.5rem;
+}
