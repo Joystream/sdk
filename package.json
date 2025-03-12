@@ -13,6 +13,8 @@
   "scripts": {
     "test:setup": "./test-setup/run-test-setup.sh",
     "test": "jest",
+    "test:sdk": "jest ./packages",
+    "test:snippets": "jest ./docs",
     "run-example": "./scripts/run-example.sh",
     "codegen:query-apis": "./scripts/ts-run.sh core ./src/query/codegen/generateApis.ts",
     "lint": "eslint .",
