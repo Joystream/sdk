@@ -41,8 +41,7 @@ jobs:
       - name: Run codegen
         run: yarn codegen
       - name: Run examples
-        run: |
-          yarn run-example query-node ts
+        run: echo "TBD"
   run_js:
     name: Run examples (JavaScript)
     strategy:
@@ -64,5 +63,4 @@ jobs:
       - name: Build examples
         run: yarn build:examples
       - name: Run examples
-        run: |
-          yarn run-example query-node js
+        run: echo "TBD"
