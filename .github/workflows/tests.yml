@@ -1,0 +1,43 @@
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  test-sdk:
+    name: SDK Tests
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Run build
+        run: yarn build
+      - name: Setup testing environment
+        run: yarn test:setup
+      - name: Run tests
+        run: yarn test:sdk
+  test-snippets:
+    name: Docs code snippets tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Install /docs dependencies
+        working-directory: ./docs
+        run: yarn install --immutable
+      - name: Test snippets
+        run: yarn test:snippets

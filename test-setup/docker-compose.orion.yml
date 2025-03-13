@@ -1,0 +1,37 @@
+services:
+  orion_db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${ORION_DB_PASS}
+      POSTGRES_DB: ${ORION_DB_NAME}
+    ports:
+      - '127.0.0.1:${ORION_DB_PORT}:${ORION_DB_PORT}'
+    command: ['postgres', '-p', '${ORION_DB_PORT}']
+    volumes:
+      - orion_data:/var/lib/postgresql/data
+
+  orion_graphql-api:
+    image: lezek/orion:4.4.1
+    restart: unless-stopped
+    depends_on:
+      - orion_db
+    environment:
+      - DB_HOST=orion_db
+      - DB_NAME=${ORION_DB_NAME}
+      - DB_PORT=${ORION_DB_PORT}
+      - DB_PASS=${ORION_DB_PASS}
+      - DB_ADMIN_USER=${ORION_DB_ADMIN_USER}
+      - DB_ADMIN_PASS=${ORION_DB_ADMIN_PASS}
+      - GQL_PORT=${ORION_GQL_API_PORT}
+      - SUPPORT_NO_CATEGORY_VIDEOS=true
+      - CRT_MARKET_CAP_MIN_VOLUME_JOY=0
+      - ORION_ENV=development
+      - DEV_DISABLE_SAME_SITE=true
+    command: ['npm', 'run', 'graphql-server-start']
+    ports:
+      - '127.0.0.1:${ORION_GQL_API_PORT}:${ORION_GQL_API_PORT}'
+
+volumes:
+  orion_data:
+    driver: local
