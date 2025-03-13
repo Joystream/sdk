@@ -20,14 +20,14 @@ async function main() {
   const keyManager = new KeyManager()
   await keyManager.ready()
   const wxUxHandler = {
-    requestConnect(uri) {
-      QrCode.toString(uri)
-        .then((code) => {
-          console.log(code)
-          console.log('Scan the displayed QR code to connect')
-          console.log(`Or copy the url directly: ${uri}`)
-        })
-        .catch(console.error)
+    requestConnect: async (uri) => {
+      const qrString = await QrCode.toString(uri, {
+        type: 'terminal',
+        small: true,
+      })
+      console.log(qrString)
+      console.log('Scan the displayed QR code to connect')
+      console.log(`Or copy the WalletConnect uri directly to your app: ${uri}`)
     },
   }
   const walletConnect = new WalletConnect(

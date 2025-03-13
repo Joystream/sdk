@@ -2660,7 +2660,7 @@ __metadata:
 
 "@joystream/sdk-core@file:../packages/core/package.tgz::locator=%40joystream%2Fsdk-docs%40workspace%3A.":
   version: 1.0.0
-  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=81321b&locator=%40joystream%2Fsdk-docs%40workspace%3A."
+  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=4f172b&locator=%40joystream%2Fsdk-docs%40workspace%3A."
   dependencies:
     "@joystream/types": "npm:^4.6.1"
     "@polkadot/api": "npm:10.7.1"
@@ -2671,7 +2671,7 @@ __metadata:
     debug: "npm:^4.4.0"
     lodash: "npm:^4.17.21"
     queue: "npm:^6.0.0"
-  checksum: 10c0/69c8a69f5cb9e98287539680545b6c1a63976fb424e38a9bff79ce3120ab5ada7859668c037cf58adbae02d06e14dd2b83de61130420cbdcdfdae2187ba0ed6c
+  checksum: 10c0/f98734f6faca25be35d12cd5cf37b71f1f39539dbafb7ff84491ed589bea0c56b030c60941bf38e3407d684998da03ebc3779600c8082e52c57372b183ef400d
   languageName: node
   linkType: hard
 

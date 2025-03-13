@@ -135,7 +135,7 @@ interface Key {
 
 ### WalletConnect integration
 
-`@joystream/sdk-core/keys` provides a `WalletConnect` class to allow very easy integration with [Wallet Connect](WalletConnect).
+`@joystream/sdk-core/keys` provides a `WalletConnect` class to allow very easy integration with [Wallet Connect](https://walletconnect.network/).
 See the minimal example below:
 
 ```typescript
